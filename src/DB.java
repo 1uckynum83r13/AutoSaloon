@@ -35,6 +35,7 @@ public class DB {
                     carMarkName STRING,
                     carModelName STRING,
                     equipment STRING,
+                    year STRING,
                     characteristics STRING,
                     price INTEGER
                  )""";
@@ -42,14 +43,15 @@ public class DB {
     }
 
     // 1.1 Добавить новый автомобиль;
-    static void addCar(String carMarkName, String carModelName, String equipment, String characteristics, int price) throws SQLException {
-        String SQL = "INSERT INTO " + carCatalog + " (carMarkName, carModelName, equipment, characteristics, price) VALUES (?, ?, ?, ?, ?)";
+    static void addCar(String carMarkName, String carModelName, String equipment, String year, String characteristics, int price) throws SQLException {
+        String SQL = "INSERT INTO " + carCatalog + " (carMarkName, carModelName, equipment, year, characteristics, price) VALUES (?, ?, ?, ?, ?, ?)";
         PreparedStatement preparedStatement = connection.prepareStatement(SQL);
         preparedStatement.setString(1, carMarkName);
         preparedStatement.setString(2, carModelName);
         preparedStatement.setString(3, equipment);
-        preparedStatement.setString(4, characteristics);
-        preparedStatement.setInt(5, price);
+        preparedStatement.setString(4, year);
+        preparedStatement.setString(5, characteristics);
+        preparedStatement.setInt(6, price);
 
         preparedStatement.executeUpdate();
 
@@ -63,29 +65,44 @@ public class DB {
     // 1.2 Получить список всех автомобилей;
     public static ArrayList<String> getCarCatalog() throws SQLException {
         ArrayList<String> CarCatalog = new ArrayList<>();
-        String SQL = "SELECT * FROM carCatalog";
+        String SQL = "SELECT * FROM carCatalog";    // ???!!!    ПРОВЕРИТЬ
         try (Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery(SQL)) {
             while (resultSet.next()) {
-                String car = resultSet.getString("");
-                CarCatalog.add(car);
+                String carMark = resultSet.getString("carMarkName");
+                String carModel = resultSet.getString("carModelName");
+                String equipment = resultSet.getString("equipment");
+                String year = resultSet.getString("year");
+
+                CarCatalog.add(carMark);
+                CarCatalog.add(carModel);
+                CarCatalog.add(equipment);
+                CarCatalog.add(year);
             }
         }
         return CarCatalog;
     }
 
     // 1.3 Получить автомобиль по его первичному ключу;
-    public static int getCarByCarId(int Id) throws SQLException {
-        String SQL = "SELECT * FROM carCatalog WHERE carId = ?";
+    public static ArrayList<String> getCarByCarId(int Id) throws SQLException {
+        ArrayList<String> foundCar = new ArrayList<>();
+        String SQL = "SELECT carMarkName, carModelName, equipment, year FROM carCatalog WHERE carId = ?";    // ???!!!    ПРОВЕРИТЬ
         try (PreparedStatement preparedStatement = connection.prepareStatement(SQL)) {
             preparedStatement.setInt(1, Id);
-            int personId = 0;
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
-                    personId = resultSet.getInt("personID");
+                    String carMark = resultSet.getString("carMarkName");
+                    String carModel = resultSet.getString("carModelName");
+                    String equipment = resultSet.getString("equipment");
+                    String year = resultSet.getString("year");
+
+                    foundCar.add(carMark);
+                    foundCar.add(carModel);
+                    foundCar.add(equipment);
+                    foundCar.add(year);
                 }
             }
-            return personId;
+            return foundCar;
         }
     }
 
@@ -102,6 +119,8 @@ public class DB {
                  )""";
         statement.executeUpdate(SQL);
     }
+
+    // 2.1 Создать клиента;
     static void addPerson (String personName, String telNumber) throws SQLException {
         String SQL = "INSERT INTO " + personTable + " (personName, telNumber) VALUES (?, ?)";
         PreparedStatement preparedStatement = connection.prepareStatement(SQL);
@@ -117,7 +136,7 @@ public class DB {
         }
     }
 
-    // 2.1 По контактному номеру клиента - получить первичный ключ клиента;
+    // 2.2 По контактному номеру клиента - получить первичный ключ клиента;
     public static int getPersonIdByPersonTelNum (String telNumber) throws SQLException {
         String SQL = "SELECT personId FROM personTable WHERE personTelNumber = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(SQL)) {
@@ -132,7 +151,7 @@ public class DB {
         }
     }
 
-    // 2.2 По первичному ключу клиента - получить имя клиента;
+    // 2.3 По первичному ключу клиента - получить имя клиента;
     public static String getPersonNameByPersonId(int Id) throws SQLException {
         String SQL = "SELECT personName FROM personTable WHERE personId = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(SQL)) {
@@ -161,6 +180,43 @@ public class DB {
                     price INTEGER
                  )""";
         statement.executeUpdate(SQL);
+    }
+
+    // 3.1 Добавить автомобиль для тест-драйва;
+    static void addTestDriveCar(String carMarkName, String carModelName, String equipment, String year, String characteristics, int price) throws SQLException {
+        String SQL = "INSERT INTO " + carCatalog + " (carMarkName, carModelName, equipment, year, characteristics, price, transferDate) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        PreparedStatement preparedStatement = connection.prepareStatement(SQL);
+        preparedStatement.setString(1, carMarkName);
+        preparedStatement.setString(2, carModelName);
+        preparedStatement.setString(3, equipment);
+        preparedStatement.setString(4, year);
+        preparedStatement.setString(5, characteristics);
+        preparedStatement.setInt(6, price);
+        Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
+        preparedStatement.setTimestamp(7, currentTimestamp);
+
+
+        preparedStatement.executeUpdate();
+
+        ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+        if (generatedKeys.next()) {
+            System.out.format("Добавлен автомобиль для тест-драйва с ID: %d",
+                    generatedKeys.getLong(1));
+        }
+    }
+
+    // 3.2 Получить доступные автомобили для тест-драйва;
+    public static ArrayList<String> getAvailableTestDriveCar () throws SQLException {
+        ArrayList<String> availableGames = new ArrayList<>();
+        String SQL = "\"SELECT carMarkName, carModelName, equipment, year FROM carCatalog WHERE  IS NULL";
+        try (Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(SQL)) {
+            while (resultSet.next()) {
+                String availableGame = resultSet.getString("availableGame");
+                availableGames.add(availableGame);
+            }
+        }
+        return availableGames;
     }
 
 
