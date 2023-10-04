@@ -26,32 +26,30 @@ public class DB {
 
 
 
-    // 1. Создать таблицу для автомобилей;
+    // 1. Создать таблицу для автомобилей; v
     static void CreateTableForCarCatalog() throws SQLException {
         Statement statement = connection.createStatement();
         String SQL = """
                 CREATE TABLE IF NOT EXISTS carCatalog (
-                    ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                    carId INTEGER PRIMARY KEY AUTOINCREMENT,
                     carMarkName STRING,
                     carModelName STRING,
                     equipment STRING,
                     year STRING,
-                    characteristics STRING,
                     price INTEGER
                  )""";
         statement.executeUpdate(SQL);
     }
 
-    // 1.1 Добавить новый автомобиль;
-    static void addCar(String carMarkName, String carModelName, String equipment, String year, String characteristics, int price) throws SQLException {
-        String SQL = "INSERT INTO " + carCatalog + " (carMarkName, carModelName, equipment, year, characteristics, price) VALUES (?, ?, ?, ?, ?, ?)";
+    // 1.1 Добавить новый автомобиль; v
+    static void addCar(String carMarkName, String carModelName, String equipment, String year, int price) throws SQLException {
+        String SQL = "INSERT INTO " + carCatalog + " (carMarkName, carModelName, equipment, year, price) VALUES (?, ?, ?, ?, ?)";
         PreparedStatement preparedStatement = connection.prepareStatement(SQL);
         preparedStatement.setString(1, carMarkName);
         preparedStatement.setString(2, carModelName);
         preparedStatement.setString(3, equipment);
         preparedStatement.setString(4, year);
-        preparedStatement.setString(5, characteristics);
-        preparedStatement.setInt(6, price);
+        preparedStatement.setInt(5, price);
 
         preparedStatement.executeUpdate();
 
@@ -62,10 +60,10 @@ public class DB {
         }
     }
 
-    // 1.2 Получить список всех автомобилей;
+    // 1.2 Получить список всех автомобилей; v
     public static ArrayList<String> getCarCatalog() throws SQLException {
         ArrayList<String> CarCatalog = new ArrayList<>();
-        String SQL = "SELECT * FROM carCatalog";    // ???!!!    ПРОВЕРИТЬ
+        String SQL = "SELECT carMarkName, carModelName, equipment, year FROM carCatalog";
         try (Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery(SQL)) {
             while (resultSet.next()) {
@@ -83,12 +81,12 @@ public class DB {
         return CarCatalog;
     }
 
-    // 1.3 Получить автомобиль по его первичному ключу;
-    public static ArrayList<String> getCarByCarId(int Id) throws SQLException {
+    // 1.3 Получить автомобиль по его первичному ключу; v
+    public static ArrayList<String> getCarByCarId(int carId) throws SQLException {
         ArrayList<String> foundCar = new ArrayList<>();
-        String SQL = "SELECT carMarkName, carModelName, equipment, year FROM carCatalog WHERE carId = ?";    // ???!!!    ПРОВЕРИТЬ
+        String SQL = "SELECT carMarkName, carModelName, equipment, year FROM carCatalog WHERE carId = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(SQL)) {
-            preparedStatement.setInt(1, Id);
+            preparedStatement.setInt(1, carId);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
                     String carMark = resultSet.getString("carMarkName");
@@ -108,39 +106,39 @@ public class DB {
 
 
 
-    // 2. Создать таблицу для клиентов;
+    // 2. Создать таблицу для клиентов; v
     static void CreateTableForPerson () throws SQLException {
         Statement statement = connection.createStatement();
         String SQL = """
                 CREATE TABLE IF NOT EXISTS personTable (
-                    ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                    personId INTEGER PRIMARY KEY AUTOINCREMENT,
                     personName STRING,
                     personTelNumber STRING
                  )""";
         statement.executeUpdate(SQL);
     }
 
-    // 2.1 Создать клиента;
-    static void addPerson (String personName, String telNumber) throws SQLException {
-        String SQL = "INSERT INTO " + personTable + " (personName, telNumber) VALUES (?, ?)";
+    // 2.1 Создать клиента; v
+    static void addPerson (String personName, String personTelNumber) throws SQLException {
+        String SQL = "INSERT INTO " + personTable + " (personName, personTelNumber) VALUES (?, ?)";
         PreparedStatement preparedStatement = connection.prepareStatement(SQL);
         preparedStatement.setString(1, personName);
-        preparedStatement.setString(2, telNumber);
+        preparedStatement.setString(2, personTelNumber);
 
         preparedStatement.executeUpdate();
 
         ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
         if (generatedKeys.next()) {
-            System.out.format("Добавлен клиент с ID: %d",
+            System.out.format("Добавлен клиент с ID: %d ",
                     generatedKeys.getLong(1));
         }
     }
 
-    // 2.2 По контактному номеру клиента - получить первичный ключ клиента;
-    public static int getPersonIdByPersonTelNum (String telNumber) throws SQLException {
+    // 2.2 По контактному номеру клиента - получить первичный ключ клиента;    -- ???!!!
+    public static int getPersonIdByPersonTelNum (String personTelNumber) throws SQLException {
         String SQL = "SELECT personId FROM personTable WHERE personTelNumber = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(SQL)) {
-            preparedStatement.setString(1, telNumber);
+            preparedStatement.setString(1, personTelNumber);
             int personId = 0;
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
@@ -151,7 +149,7 @@ public class DB {
         }
     }
 
-    // 2.3 По первичному ключу клиента - получить имя клиента;
+    // 2.3 По первичному ключу клиента - получить имя клиента; v
     public static String getPersonNameByPersonId(int Id) throws SQLException {
         String SQL = "SELECT personName FROM personTable WHERE personId = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(SQL)) {
@@ -167,33 +165,33 @@ public class DB {
 
 
 
-    // 3. Создать таблицу автомобилей для тест-драйва;    ???!!!
+    // 3. Создать таблицу автомобилей для тест-драйва; v
     static void CreateTableForTestDriveCarCatalog() throws SQLException {
         Statement statement = connection.createStatement();
         String SQL = """
                 CREATE TABLE IF NOT EXISTS testDriveCarCatalog (
-                    ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                    testDriveCarID INTEGER PRIMARY KEY AUTOINCREMENT,
                     carMarkName STRING,
                     carModelName STRING,
                     equipment STRING,
-                    characteristics STRING,
-                    price INTEGER
+                    year STRING,
+                    price INTEGER,
+                    transferDate DATETIME
                  )""";
         statement.executeUpdate(SQL);
     }
 
-    // 3.1 Добавить автомобиль для тест-драйва;
-    static void addTestDriveCar(String carMarkName, String carModelName, String equipment, String year, String characteristics, int price) throws SQLException {
-        String SQL = "INSERT INTO " + carCatalog + " (carMarkName, carModelName, equipment, year, characteristics, price, transferDate) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    // 3.1 Добавить автомобиль для тест-драйва; v
+    static void addTestDriveCar(String carMarkName, String carModelName, String equipment, String year, int price) throws SQLException {
+        String SQL = "INSERT INTO " + testDriveCarCatalog + " (carMarkName, carModelName, equipment, year, price, transferDate) VALUES (?, ?, ?, ?, ?, ?)";
         PreparedStatement preparedStatement = connection.prepareStatement(SQL);
         preparedStatement.setString(1, carMarkName);
         preparedStatement.setString(2, carModelName);
         preparedStatement.setString(3, equipment);
         preparedStatement.setString(4, year);
-        preparedStatement.setString(5, characteristics);
-        preparedStatement.setInt(6, price);
+        preparedStatement.setInt(5, price);
         Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
-        preparedStatement.setTimestamp(7, currentTimestamp);
+        preparedStatement.setTimestamp(6, currentTimestamp);
 
 
         preparedStatement.executeUpdate();
@@ -207,21 +205,21 @@ public class DB {
 
     // 3.2 Получить доступные автомобили для тест-драйва;
     public static ArrayList<String> getAvailableTestDriveCar () throws SQLException {
-        ArrayList<String> availableGames = new ArrayList<>();
-        String SQL = "\"SELECT carMarkName, carModelName, equipment, year FROM carCatalog WHERE  IS NULL";
+        ArrayList<String> availableCars = new ArrayList<>();
+        String SQL = "SELECT carMarkName, carModelName, equipment, year FROM carCatalog WHERE  IS NULL";
         try (Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery(SQL)) {
             while (resultSet.next()) {
-                String availableGame = resultSet.getString("availableGame");
-                availableGames.add(availableGame);
+                String availableCar = resultSet.getString("availableCar");
+                availableCars.add(availableCar);
             }
         }
-        return availableGames;
+        return availableCars;
     }
 
 
 
-    // 4. Создать таблицу о поездках в тест-драйве;
+    // 4. Создать таблицу о поездках в тест-драйве; v
     static void CreateTableForTestDriveRecords() throws SQLException {
         Statement statement = connection.createStatement();
         String SQL = """
@@ -236,7 +234,7 @@ public class DB {
         statement.executeUpdate(SQL);
     }
 
-    // Добавить событие о тест-драйве;
+    // Добавить событие о тест-драйве; v
     static void makeTestDriveRecord (int personId, int carId, int managerId) throws SQLException {
         String SQL = "INSERT INTO " + testDriveRecordsTable + " (personId, carId, managerId, dateOfRent, dateOfReturn) VALUES (?, ?, ?, ?, ?)";
         PreparedStatement preparedStatement = connection.prepareStatement(SQL);
@@ -260,7 +258,7 @@ public class DB {
 
 
 
-    // 5. Создать таблицу для купленных автомобилей;
+    // 5. Создать таблицу для купленных автомобилей; v
     static void CreateTableForDealRecords() throws SQLException {
         Statement statement = connection.createStatement();
         String SQL = """
@@ -274,7 +272,7 @@ public class DB {
         statement.executeUpdate(SQL);
     }
 
-    // 5.1 Добавить сделку;
+    // 5.1 Добавить сделку; v
     static void addDeal (int personId, int carId, int managerId) throws SQLException {
         String SQL = "INSERT INTO " + dealRecordsTable + " (personId, carId, managerId, dealTime) VALUES (?, ?, ?, ?)";
         PreparedStatement preparedStatement = connection.prepareStatement(SQL);
@@ -296,12 +294,12 @@ public class DB {
 
 
 
-    // 6. Создать таблицу для менеджеров;
+    // 6. Создать таблицу для менеджеров; v
     static void CreateTableForManager() throws SQLException {
         Statement statement = connection.createStatement();
         String SQL = """
                 CREATE TABLE IF NOT EXISTS managerTable (
-                    ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                    managerId INTEGER PRIMARY KEY AUTOINCREMENT,
                     managerName STRING,
                     managerLastName STRING,
                     managerTelNumber STRING
@@ -309,7 +307,7 @@ public class DB {
         statement.executeUpdate(SQL);
     }
 
-    // 6.1 Добавить менеджера;
+    // 6.1 Добавить менеджера; v
     static void addManager (String managerName, String managerLastName, String managerTelNumber) throws SQLException {
         String SQL = "INSERT INTO " + managerTable + " (managerName, managerLastName, managerTelNumber) VALUES (?, ?, ?)";
         PreparedStatement preparedStatement = connection.prepareStatement(SQL);

@@ -1,19 +1,17 @@
-public class Cars {
+public class Car {
     private int carId;    // Первичный ключ автомобиля;
     private String carMarkName;    // Марка автомобиля;
     private String carModelName;    // Модель автомобиля;
     private String equipment;    // Комплектация;
     private String year;    // Год выпуска;
-    private String characteristics;    // Характеритики;
     private int price;    // Цена;
 
-    public Cars (int carId, String carMarkName, String carModelName, String equipment, String year, String characteristics, int price) {
+    public Car (int carId, String carMarkName, String carModelName, String equipment, String year, int price) {
         this.carId = carId;
         this.carMarkName = carMarkName;
         this.carModelName = carModelName;
         this.equipment = equipment;
         this.year = year;
-        this.characteristics = characteristics;
         this.price = price;
     }
 
@@ -32,12 +30,9 @@ public class Cars {
     public String getEquipment() {
         return equipment;
     }
+
     public String getYear() {
         return year;
-    }
-
-    public String getCharacteristics() {
-        return characteristics;
     }
 
     public int getPrice() {
